@@ -156,3 +156,29 @@ func Check(
 
 	return resp.Allowed, nil
 }
+
+func ListObjects(
+	user string,
+	relation string,
+	typeName string,
+) ([]string, error) {
+	if serverInstance == nil {
+		log.Fatalf("server instance is nil")
+	}
+
+	req := openfgav1.ListObjectsRequest{
+		StoreId:              storeId,
+		AuthorizationModelId: authorizationModelId,
+		User:                 user,
+		Relation:             relation,
+		Type:                 typeName,
+	}
+
+	resp, err := serverInstance.ListObjects(ctx, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Objects, nil
+}
