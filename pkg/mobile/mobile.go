@@ -51,7 +51,7 @@ type Config struct {
 	AuthorizationModelId string
 }
 
-func configure(config Config) {
+func Configure(config Config) {
 	storeId = config.StoreId
 	authorizationModelId = config.AuthorizationModelId
 }
@@ -129,7 +129,7 @@ func MigrateDatabase(dbPath string) {
 	}
 }
 
-func check(
+func Check(
 	user string,
 	object string,
 	relation string,
