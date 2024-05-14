@@ -39,26 +39,6 @@ func InitServer(dbPath string) {
 	serverInstance = server.MustNewServerWithOpts(
 		server.WithDatastore(datastore),
 	)
-
-	println("serverInstance: ", serverInstance)
-}
-
-func CreateStore(storeName string) {
-	if serverInstance == nil {
-		log.Fatalf("server instance is nil")
-	}
-
-	req := openfgav1.CreateStoreRequest{
-		Name: storeName,
-	}
-
-	resp, err := serverInstance.CreateStore(ctx, &req)
-
-	if err != nil {
-		println("CreateStoreRequest error: ", err.Error())
-	}
-
-	println("CreateStoreResponse: ", resp)
 }
 
 func MigrateDatabase(dbPath string) {
@@ -114,6 +94,120 @@ func MigrateDatabase(dbPath string) {
 	if err := goose.Up(db, migrationsPath); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func ReadAuthorizationModels(
+	encodedReadAuthorizationModelsRequest []byte,
+) ([]byte, error) {
+	if serverInstance == nil {
+		log.Fatalf("server instance is nil")
+	}
+
+	req := openfgav1.ReadAuthorizationModelsRequest{}
+
+	unmarshalErr := json.Unmarshal(encodedReadAuthorizationModelsRequest, &req)
+
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
+	}
+
+	resp, err := serverInstance.ReadAuthorizationModels(ctx, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	jsonResult, err := json.Marshal(resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResult, nil
+}
+
+func WriteAuthorizationModel(
+	encodedWriteAuthorizationModelRequest []byte,
+) ([]byte, error) {
+	if serverInstance == nil {
+		log.Fatalf("server instance is nil")
+	}
+
+	req := openfgav1.WriteAuthorizationModelRequest{}
+
+	unmarshalErr := json.Unmarshal(encodedWriteAuthorizationModelRequest, &req)
+
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
+	}
+
+	resp, err := serverInstance.WriteAuthorizationModel(ctx, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	jsonResult, err := json.Marshal(resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResult, nil
+}
+
+func ListStores(
+	encodedListStoreRequest []byte,
+) ([]byte, error) {
+	if serverInstance == nil {
+		log.Fatalf("server instance is nil")
+	}
+
+	req := openfgav1.ListStoresRequest{}
+
+	unmarshalErr := json.Unmarshal(encodedListStoreRequest, &req)
+
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
+	}
+
+	resp, err := serverInstance.ListStores(ctx, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	jsonResult, err := json.Marshal(resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResult, nil
+}
+
+func CreateStore(storeName string) ([]byte, error) {
+	if serverInstance == nil {
+		log.Fatalf("server instance is nil")
+	}
+
+	req := openfgav1.CreateStoreRequest{
+		Name: storeName,
+	}
+
+	resp, err := serverInstance.CreateStore(ctx, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	jsonResult, err := json.Marshal(resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResult, nil
 }
 
 func Write(
@@ -186,6 +280,36 @@ func ListObjects(
 	}
 
 	jsonResult, err := json.Marshal(resp.Objects)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResult, nil
+}
+
+func ListUsers(
+	encodedListUsersRequest []byte,
+) ([]byte, error) {
+	if serverInstance == nil {
+		log.Fatalf("server instance is nil")
+	}
+
+	req := openfgav1.ListUsersRequest{}
+
+	unmarshalErr := json.Unmarshal(encodedListUsersRequest, &req)
+
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
+	}
+
+	resp, err := serverInstance.ListUsers(ctx, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	jsonResult, err := json.Marshal(resp)
 
 	if err != nil {
 		return nil, err
