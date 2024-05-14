@@ -3,6 +3,7 @@ package mobile
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"log"
 	"net/url"
 
@@ -19,10 +20,6 @@ import (
 var serverInstance *server.Server
 
 var ctx = context.Background()
-
-var storeId string
-
-var authorizationModelId string
 
 func InitServer(dbPath string) {
 	var datastore storage.OpenFGADatastore
@@ -44,16 +41,6 @@ func InitServer(dbPath string) {
 	)
 
 	println("serverInstance: ", serverInstance)
-}
-
-type Config struct {
-	StoreId              string
-	AuthorizationModelId string
-}
-
-func Configure(config Config) {
-	storeId = config.StoreId
-	authorizationModelId = config.AuthorizationModelId
 }
 
 func CreateStore(storeName string) {
@@ -129,23 +116,43 @@ func MigrateDatabase(dbPath string) {
 	}
 }
 
+func Write(
+	encodedWriteRequest []byte,
+) error {
+	if serverInstance == nil {
+		log.Fatalf("server instance is nil")
+	}
+
+	req := openfgav1.WriteRequest{}
+
+	unmarshalErr := json.Unmarshal(encodedWriteRequest, &req)
+
+	if unmarshalErr != nil {
+		return unmarshalErr
+	}
+
+	_, err := serverInstance.Write(ctx, &req)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Check(
-	user string,
-	object string,
-	relation string,
+	encodedCheckRequest []byte,
 ) (bool, error) {
 	if serverInstance == nil {
 		log.Fatalf("server instance is nil")
 	}
 
-	req := openfgav1.CheckRequest{
-		StoreId:              storeId,
-		AuthorizationModelId: authorizationModelId,
-		TupleKey: &openfgav1.CheckRequestTupleKey{
-			User:     user,
-			Object:   object,
-			Relation: relation,
-		},
+	req := openfgav1.CheckRequest{}
+
+	unmarshalErr := json.Unmarshal(encodedCheckRequest, &req)
+
+	if unmarshalErr != nil {
+		return false, unmarshalErr
 	}
 
 	resp, err := serverInstance.Check(ctx, &req)
@@ -158,20 +165,18 @@ func Check(
 }
 
 func ListObjects(
-	user string,
-	relation string,
-	typeName string,
-) ([]string, error) {
+	encodedListObjectsRequest []byte,
+) ([]byte, error) {
 	if serverInstance == nil {
 		log.Fatalf("server instance is nil")
 	}
 
-	req := openfgav1.ListObjectsRequest{
-		StoreId:              storeId,
-		AuthorizationModelId: authorizationModelId,
-		User:                 user,
-		Relation:             relation,
-		Type:                 typeName,
+	req := openfgav1.ListObjectsRequest{}
+
+	unmarshalErr := json.Unmarshal(encodedListObjectsRequest, &req)
+
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
 	}
 
 	resp, err := serverInstance.ListObjects(ctx, &req)
@@ -180,5 +185,11 @@ func ListObjects(
 		return nil, err
 	}
 
-	return resp.Objects, nil
+	jsonResult, err := json.Marshal(resp.Objects)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResult, nil
 }
