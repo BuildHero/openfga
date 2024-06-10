@@ -13,4 +13,7 @@ coverage*.out
 test.db
 Mobile.xcframework
 Mobile.aar
+MobileOpenFGA.xcframework
+MobileOpenFGA.aar
 outputs/Mobile-sources.jar
+outputs/MobileOpenFGA-sources.jar
