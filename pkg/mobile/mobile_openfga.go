@@ -21,7 +21,7 @@ var serverInstance *server.Server
 
 var ctx = context.Background()
 
-func InitServer(dbPath string) {
+func InitServer(dbPath string) error {
 	var datastore storage.OpenFGADatastore
 	var err error
 
@@ -33,15 +33,17 @@ func InitServer(dbPath string) {
 
 	if err != nil {
 		println("error: ", err)
-		panic(err)
+		return err
 	}
 
 	serverInstance = server.MustNewServerWithOpts(
 		server.WithDatastore(datastore),
 	)
+
+	return nil
 }
 
-func MigrateDatabase(dbPath string) {
+func MigrateDatabase(dbPath string) error {
 	var uri, driver, dialect, migrationsPath string
 
 	driver = "sqlite3"
@@ -56,14 +58,15 @@ func MigrateDatabase(dbPath string) {
 	dbURI, err := url.Parse(uri)
 
 	if err != nil {
-		log.Fatalf("invalid database uri: %v\n", err)
+		return err
 	}
 
 	uri = dbURI.String()
 
 	db, err := sql.Open(driver, uri)
+
 	if err != nil {
-		log.Fatalf("failed to open a connection to the datastore: %v", err)
+		return err
 	}
 
 	defer func() {
@@ -73,12 +76,12 @@ func MigrateDatabase(dbPath string) {
 	}()
 
 	if err != nil {
-		log.Fatalf("failed to initialize database connection: %v", err)
+		return err
 	}
 
 	// TODO use goose.OpenDBWithDriver which already sets the dialect
 	if err := goose.SetDialect(dialect); err != nil {
-		log.Fatalf("failed to initialize the migrate command: %v", err)
+		return err
 	}
 
 	goose.SetBaseFS(assets.EmbedMigrations)
@@ -86,14 +89,16 @@ func MigrateDatabase(dbPath string) {
 	currentVersion, err := goose.GetDBVersion(db)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("current version %d", currentVersion)
 
 	if err := goose.Up(db, migrationsPath); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 func ReadAuthorizationModels(
