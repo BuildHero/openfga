@@ -1,4 +1,4 @@
-package mobile
+package mobile_openfga
 
 import (
 	"context"
