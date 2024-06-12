@@ -3,11 +3,11 @@ package mobile_openfga
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"log"
 	"net/url"
 
 	openfgav1 "github.com/openfga/api/proto/openfga/v1"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/openfga/openfga/assets"
 	"github.com/openfga/openfga/pkg/server"
@@ -21,9 +21,13 @@ var serverInstance *server.Server
 
 var ctx = context.Background()
 
+type ctxKey string
+
 func InitServer(dbPath string) error {
 	var datastore storage.OpenFGADatastore
 	var err error
+
+	ctx = context.WithValue(ctx, ctxKey("request-validated"), true)
 
 	datastoreOptions := []sqlcommon.DatastoreOption{}
 
@@ -110,7 +114,11 @@ func ReadAuthorizationModels(
 
 	req := openfgav1.ReadAuthorizationModelsRequest{}
 
-	unmarshalErr := json.Unmarshal(encodedReadAuthorizationModelsRequest, &req)
+	unmarshaler := protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+
+	unmarshalErr := unmarshaler.Unmarshal(encodedReadAuthorizationModelsRequest, &req)
 
 	if unmarshalErr != nil {
 		return nil, unmarshalErr
@@ -122,7 +130,7 @@ func ReadAuthorizationModels(
 		return nil, err
 	}
 
-	jsonResult, err := json.Marshal(resp)
+	jsonResult, err := protojson.Marshal(resp)
 
 	if err != nil {
 		return nil, err
@@ -140,7 +148,11 @@ func WriteAuthorizationModel(
 
 	req := openfgav1.WriteAuthorizationModelRequest{}
 
-	unmarshalErr := json.Unmarshal(encodedWriteAuthorizationModelRequest, &req)
+	unmarshaler := protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+
+	unmarshalErr := unmarshaler.Unmarshal(encodedWriteAuthorizationModelRequest, &req)
 
 	if unmarshalErr != nil {
 		return nil, unmarshalErr
@@ -152,7 +164,7 @@ func WriteAuthorizationModel(
 		return nil, err
 	}
 
-	jsonResult, err := json.Marshal(resp)
+	jsonResult, err := protojson.Marshal(resp)
 
 	if err != nil {
 		return nil, err
@@ -170,7 +182,11 @@ func ListStores(
 
 	req := openfgav1.ListStoresRequest{}
 
-	unmarshalErr := json.Unmarshal(encodedListStoreRequest, &req)
+	unmarshaler := protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+
+	unmarshalErr := unmarshaler.Unmarshal(encodedListStoreRequest, &req)
 
 	if unmarshalErr != nil {
 		return nil, unmarshalErr
@@ -182,7 +198,7 @@ func ListStores(
 		return nil, err
 	}
 
-	jsonResult, err := json.Marshal(resp)
+	jsonResult, err := protojson.Marshal(resp)
 
 	if err != nil {
 		return nil, err
@@ -206,7 +222,7 @@ func CreateStore(storeName string) ([]byte, error) {
 		return nil, err
 	}
 
-	jsonResult, err := json.Marshal(resp)
+	jsonResult, err := protojson.Marshal(resp)
 
 	if err != nil {
 		return nil, err
@@ -224,7 +240,11 @@ func Write(
 
 	req := openfgav1.WriteRequest{}
 
-	unmarshalErr := json.Unmarshal(encodedWriteRequest, &req)
+	unmarshaler := protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+
+	unmarshalErr := unmarshaler.Unmarshal(encodedWriteRequest, &req)
 
 	if unmarshalErr != nil {
 		return unmarshalErr
@@ -248,7 +268,11 @@ func Check(
 
 	req := openfgav1.CheckRequest{}
 
-	unmarshalErr := json.Unmarshal(encodedCheckRequest, &req)
+	unmarshaler := protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+
+	unmarshalErr := unmarshaler.Unmarshal(encodedCheckRequest, &req)
 
 	if unmarshalErr != nil {
 		return false, unmarshalErr
@@ -272,7 +296,11 @@ func ListObjects(
 
 	req := openfgav1.ListObjectsRequest{}
 
-	unmarshalErr := json.Unmarshal(encodedListObjectsRequest, &req)
+	unmarshaler := protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+
+	unmarshalErr := unmarshaler.Unmarshal(encodedListObjectsRequest, &req)
 
 	if unmarshalErr != nil {
 		return nil, unmarshalErr
@@ -284,7 +312,7 @@ func ListObjects(
 		return nil, err
 	}
 
-	jsonResult, err := json.Marshal(resp.Objects)
+	jsonResult, err := protojson.Marshal(resp)
 
 	if err != nil {
 		return nil, err
@@ -302,7 +330,11 @@ func ListUsers(
 
 	req := openfgav1.ListUsersRequest{}
 
-	unmarshalErr := json.Unmarshal(encodedListUsersRequest, &req)
+	unmarshaler := protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+
+	unmarshalErr := unmarshaler.Unmarshal(encodedListUsersRequest, &req)
 
 	if unmarshalErr != nil {
 		return nil, unmarshalErr
@@ -314,7 +346,7 @@ func ListUsers(
 		return nil, err
 	}
 
-	jsonResult, err := json.Marshal(resp)
+	jsonResult, err := protojson.Marshal(resp)
 
 	if err != nil {
 		return nil, err
