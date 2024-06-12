@@ -42,6 +42,7 @@ func InitServer(dbPath string) error {
 
 	serverInstance = server.MustNewServerWithOpts(
 		server.WithDatastore(datastore),
+		server.WithExperimentals(server.ExperimentalFeatureFlag("enable-list-users")),
 	)
 
 	return nil
