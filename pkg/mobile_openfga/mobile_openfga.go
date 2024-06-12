@@ -261,7 +261,7 @@ func Write(
 
 func Check(
 	encodedCheckRequest []byte,
-) (bool, error) {
+) ([]byte, error) {
 	if serverInstance == nil {
 		log.Fatalf("server instance is nil")
 	}
@@ -275,16 +275,22 @@ func Check(
 	unmarshalErr := unmarshaler.Unmarshal(encodedCheckRequest, &req)
 
 	if unmarshalErr != nil {
-		return false, unmarshalErr
+		return nil, unmarshalErr
 	}
 
 	resp, err := serverInstance.Check(ctx, &req)
 
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return resp.Allowed, nil
+	jsonResult, err := protojson.Marshal(resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonResult, nil
 }
 
 func ListObjects(
